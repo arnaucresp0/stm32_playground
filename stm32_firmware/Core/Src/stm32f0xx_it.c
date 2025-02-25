@@ -57,6 +57,8 @@
 /* External variables --------------------------------------------------------*/
 extern DMA_HandleTypeDef hdma_adc;
 extern TIM_HandleTypeDef htim3;
+extern UART_HandleTypeDef huart2;
+
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -169,6 +171,9 @@ void TIM3_IRQHandler(void)
   /* USER CODE END TIM3_IRQn 1 */
 }
 
-/* USER CODE BEGIN 1 */
+void USART2_IRQHandler(void)
+{
+    HAL_UART_IRQHandler(&huart2);
+}
 
-/* USER CODE END 1 */
+

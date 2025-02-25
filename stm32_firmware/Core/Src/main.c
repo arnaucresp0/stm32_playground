@@ -35,6 +35,7 @@ uint16_t counter = 0;
 uint16_t delay_value = 1000;
 uint32_t serialNumber = 0;
 uint32_t saved_serial = 0;
+uint8_t received_data;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
@@ -65,6 +66,8 @@ int main(void)
   MX_USART2_UART_Init();
   MX_ADC_Init();
   MX_TIM3_Init();
+
+  HAL_UART_Receive_IT(&huart2, &received_data, 1); // Start UART reception in interrupt mode
   HAL_TIM_Base_Start_IT(&htim3);  // Start TIM3 interrupt
   HAL_ADC_Start_DMA(&hadc, (uint32_t *)adc_values, 3);
 
@@ -80,6 +83,16 @@ int main(void)
 	  }
   }
 }
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+    if (huart->Instance == USART1) // Check which UART triggered the interrupt
+    {
+        HAL_UART_Transmit(&huart2, &received_data, 1, HAL_MAX_DELAY); // Echo back received data
+        HAL_UART_Receive_IT(&huart2, &received_data, 1); // Restart reception
+    }
+}
+
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
@@ -210,10 +223,6 @@ static void MX_ADC_Init(void)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN ADC_Init 2 */
-
-  /* USER CODE END ADC_Init 2 */
-
 }
 
 /**
@@ -224,16 +233,9 @@ static void MX_ADC_Init(void)
 static void MX_TIM3_Init(void)
 {
 
-  /* USER CODE BEGIN TIM3_Init 0 */
-
-  /* USER CODE END TIM3_Init 0 */
-
   TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
 
-  /* USER CODE BEGIN TIM3_Init 1 */
-
-  /* USER CODE END TIM3_Init 1 */
   htim3.Instance = TIM3;
   htim3.Init.Prescaler = 7;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
@@ -255,10 +257,6 @@ static void MX_TIM3_Init(void)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN TIM3_Init 2 */
-
-  /* USER CODE END TIM3_Init 2 */
-
 }
 
 /**
@@ -269,15 +267,8 @@ static void MX_TIM3_Init(void)
 static void MX_USART2_UART_Init(void)
 {
 
-  /* USER CODE BEGIN USART2_Init 0 */
-
-  /* USER CODE END USART2_Init 0 */
-
-  /* USER CODE BEGIN USART2_Init 1 */
-
-  /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
-  huart2.Init.BaudRate = 38400;
+  huart2.Init.BaudRate = 115200;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
@@ -290,10 +281,6 @@ static void MX_USART2_UART_Init(void)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN USART2_Init 2 */
-
-  /* USER CODE END USART2_Init 2 */
-
 }
 
 /**
@@ -348,9 +335,6 @@ static void MX_GPIO_Init(void)
 /* USER CODE END MX_GPIO_Init_2 */
 }
 
-/* USER CODE BEGIN 4 */
-
-/* USER CODE END 4 */
 
 /**
   * @brief  This function is executed in case of error occurrence.
