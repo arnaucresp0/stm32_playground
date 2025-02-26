@@ -26,10 +26,10 @@ extern "C" {
 #endif
 
 #define FLASH_USER_START_ADDR  0x0800FC00  // Last page of Flash (1 KB page size)
-#define FLASH_VAR1_ADDR        (FLASH_USER_START_ADDR)         // OpenCloseCounter
-#define FLASH_VAR2_ADDR        (FLASH_VAR1_ADDR + 4)           // TotalCycleTimes
-#define FLASH_ERRORS_ADDR      (FLASH_VAR2_ADDR + 4)           // errors_counters[]
-#define FLASH_VAR3_ADDR        (FLASH_ERRORS_ADDR + 18)        // Last uint32_t
+#define FLASH_OPENCLOSE_ADDR        (FLASH_USER_START_ADDR)         // OpenCloseCounter
+#define FLASH_CYCLETIME_ADDR         0x0800F004           		   // TotalCycleTimes
+#define FLASH_ERRORS_ADDR       	 0x0800F004           		   // errors_counters[]
+#define FLASH_SERIAL_ADDR       	 0x0800F020          		   // Last uint32_t
 
 void Save_To_Flash(uint32_t address, void *data, uint16_t size);
 void Load_From_Flash(uint32_t address, void *data, uint16_t size);

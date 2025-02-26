@@ -19,7 +19,7 @@
 #include "main.h"
 #include "flash.h"
 #include "adc.h"
-
+#include "evalve_control.h"
 
 #define SERIAL_LENGTH 5
 
@@ -68,14 +68,19 @@ int main(void)
   adc_manager_start();
 
   generate_Serial_Num();
-  saved_serial = Read_From_Flash(FLASH_USER_START_ADDR);
+  saved_serial = Read_From_Flash(FLASH_SERIAL_ADDR);
   // Read data from Flash
   while (1){
-	  if (serialNumber == saved_serial){
+	  /*if (serialNumber == saved_serial){
 		  delay_value = 250;
 	  }
 	  else{
 		  delay_value = 1000;
+	  }*/
+	  eValveControl_main();
+	  if (counter == 5000){
+		  eValveControl_triggerWaterflush();
+		  counter = 0;
 	  }
   }
 }
@@ -101,10 +106,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 static void Task_Every_1ms(void)
 {
     counter++;
-    if (counter >= delay_value){
+    eValveControl_millisCounter();
+    /*if (counter >= delay_value){
     	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5); // Example: Toggle an LED
     	counter = 0;
-    }
+    }*/
 }
 
 static void generate_Serial_Num(void){
@@ -116,7 +122,7 @@ static void generate_Serial_Num(void){
     }
     if(serialNumber == 0){
         serialNumber = serial;
-        Save_To_Flash(FLASH_USER_START_ADDR, &serialNumber, sizeof(serialNumber));
+        Save_To_Flash(FLASH_SERIAL_ADDR, &serialNumber, sizeof(serialNumber));
     }
 }
 
