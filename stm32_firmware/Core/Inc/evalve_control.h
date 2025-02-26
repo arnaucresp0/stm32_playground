@@ -19,7 +19,7 @@
  * DEFINITIONS AND MACROS
  *****************************************************************************/
 
-#define EVALVE_SIGNAL_PULSE     2000U     //This is the pulse duration in [ms]
+#define EVALVE_SIGNAL_PULSE     20U     //This is the pulse duration in [ms]
 
 /******************************************************************************
  * TYPEDEFS AND STRUCTURES
