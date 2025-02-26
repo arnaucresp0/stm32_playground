@@ -71,7 +71,7 @@ static eValve_control_state_machine_e evalveControlState = EVALVE_CONTROL_NO_FLU
 //This variable counts how many milliseconds has passed.
 volatile static uint16_t millisecCounter = 0;
 //This variable indicates how long the valve needs to be open in [ms].
-static uint16_t eValveOpenTime = 1000;
+static uint16_t eValveOpenTime = 2000;
 //This variable that will count the open-close cycles
 static uint32_t OpenCloseCounter = 0;
 //This varaiable that will sum the eValve open-close cycle time
@@ -147,7 +147,7 @@ void eValveControl_main(void){
         case(EVALVE_CONTROL_PULSE_START_FLUSHING_STATE):
             //This state is to create a pulse of EVALVE_SIGNAL_PULSE duration
             read_valve_signal_pulse();
-            if (millisecCounter == EVALVE_SIGNAL_PULSE)return;
+            if (millisecCounter >= EVALVE_SIGNAL_PULSE)return;
             //check_valve_signal_pulse();
             //EVALVE_CONTROL_ENDING_START_FLUSHING_STATE
             evalveControlState = (eValve_control_state_machine_e)((uint8_t)evalveControlState + 1);
@@ -158,7 +158,7 @@ void eValveControl_main(void){
             evalveControlState = EVALVE_CONTROL_FLUSHING_STATE;
             break;      //Reset milliseconds timer counter
         case(EVALVE_CONTROL_FLUSHING_STATE):   //Wait for a while with the eValve open.
-			if (millisecCounter == eValveOpenTime)return;
+			if (millisecCounter >= eValveOpenTime)return;
             evalveControlState = EVALVE_CONTROL_RISING_STOP_FLUSHING_STATE;
             return;
         case(EVALVE_CONTROL_RISING_STOP_FLUSHING_STATE):    //Start closing the evalve.
