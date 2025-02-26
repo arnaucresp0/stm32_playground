@@ -33,6 +33,7 @@ uint16_t delay_value = 1000;
 uint32_t serialNumber = 0;
 uint32_t saved_serial = 0;
 uint8_t received_data;
+uint8_t pinVal = 0;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
@@ -78,9 +79,11 @@ int main(void)
 		  delay_value = 1000;
 	  }*/
 	  eValveControl_main();
-	  if (counter == 5000){
+	  pinVal = HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin);
+	  if (pinVal == GPIO_PIN_RESET){
 		  eValveControl_triggerWaterflush();
 		  counter = 0;
+		  pinVal = GPIO_PIN_SET;
 	  }
   }
 }
@@ -105,7 +108,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 static void Task_Every_1ms(void)
 {
-    counter++;
+    //counter++;
     eValveControl_millisCounter();
     /*if (counter >= delay_value){
     	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5); // Example: Toggle an LED

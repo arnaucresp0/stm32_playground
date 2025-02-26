@@ -147,9 +147,9 @@ void eValveControl_main(void){
         case(EVALVE_CONTROL_PULSE_START_FLUSHING_STATE):
             //This state is to create a pulse of EVALVE_SIGNAL_PULSE duration
             read_valve_signal_pulse();
-            if (uart_tick_timeout_check(EVALVE_SIGNAL_PULSE, millisecCounter) == false) return;
+            if (millisecCounter == EVALVE_SIGNAL_PULSE)return;
             //check_valve_signal_pulse();
-            //EVALVE_CONTROL_ENDING_START_FLUSHING_STATE //EVALVE_CONTROL_ENDING_STOP_FLUSHING_STATE
+            //EVALVE_CONTROL_ENDING_START_FLUSHING_STATE
             evalveControlState = (eValve_control_state_machine_e)((uint8_t)evalveControlState + 1);
             return;
         case(EVALVE_CONTROL_ENDING_START_FLUSHING_STATE):   //Stop opening eValve after
@@ -158,7 +158,7 @@ void eValveControl_main(void){
             evalveControlState = EVALVE_CONTROL_FLUSHING_STATE;
             break;      //Reset milliseconds timer counter
         case(EVALVE_CONTROL_FLUSHING_STATE):   //Wait for a while with the eValve open.
-            if (uart_tick_timeout_check(eValveOpenTime, millisecCounter) == false) return;
+			if (millisecCounter == eValveOpenTime)return;
             evalveControlState = EVALVE_CONTROL_RISING_STOP_FLUSHING_STATE;
             return;
         case(EVALVE_CONTROL_RISING_STOP_FLUSHING_STATE):    //Start closing the evalve.
