@@ -20,13 +20,14 @@
 #include "flash.h"
 #include "adc.h"
 #include "evalve_control.h"
+#include "uart_control.h"
+#include "usart.h"
 
 #define SERIAL_LENGTH 5
 
 /* Private variables ---------------------------------------------------------*/
 
 TIM_HandleTypeDef htim3;
-UART_HandleTypeDef huart2;
 
 uint16_t counter = 0;
 uint16_t delay_value = 1000;
@@ -38,7 +39,6 @@ uint8_t pinVal = 0;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
-static void MX_USART2_UART_Init(void);
 static void MX_TIM3_Init(void);
 static void Task_Every_1ms(void);
 static void generate_Serial_Num(void);
@@ -60,7 +60,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-  MX_USART2_UART_Init();
+  uartControl_init();
   MX_ADC_Init();
   MX_TIM3_Init();
 
@@ -87,16 +87,6 @@ int main(void)
 	  }
   }
 }
-
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-    if (huart->Instance == USART1) // Check which UART triggered the interrupt
-    {
-        HAL_UART_Transmit(&huart2, &received_data, 1, HAL_MAX_DELAY); // Echo back received data
-        HAL_UART_Receive_IT(&huart2, &received_data, 1); // Restart reception
-    }
-}
-
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
@@ -193,30 +183,6 @@ static void MX_TIM3_Init(void)
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-}
-
-/**
-  * @brief USART2 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USART2_UART_Init(void)
-{
-
-  huart2.Instance = USART2;
-  huart2.Init.BaudRate = 115200;
-  huart2.Init.WordLength = UART_WORDLENGTH_8B;
-  huart2.Init.StopBits = UART_STOPBITS_1;
-  huart2.Init.Parity = UART_PARITY_NONE;
-  huart2.Init.Mode = UART_MODE_TX_RX;
-  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
-  huart2.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-  huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-  if (HAL_UART_Init(&huart2) != HAL_OK)
   {
     Error_Handler();
   }
