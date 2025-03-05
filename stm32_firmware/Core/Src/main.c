@@ -78,13 +78,14 @@ int main(void)
 	  else{
 		  delay_value = 1000;
 	  }*/
-	  eValveControl_main();
-	  pinVal = HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin);
-	  if (pinVal == GPIO_PIN_RESET){
-		  eValveControl_triggerWaterflush();
-		  counter = 0;
-		  pinVal = GPIO_PIN_SET;
-	  }
+	  //eValveControl_main();
+	  uartControl_main();
+	  //pinVal = HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin);
+	  //if (pinVal == GPIO_PIN_RESET){
+		  //eValveControl_triggerWaterflush();
+		  //counter = 0;
+		  //pinVal = GPIO_PIN_SET;
+	  //}
   }
 }
 
@@ -99,7 +100,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 static void Task_Every_1ms(void)
 {
     //counter++;
-    eValveControl_millisCounter();
+    //eValveControl_millisCounter();
     /*if (counter >= delay_value){
     	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5); // Example: Toggle an LED
     	counter = 0;

@@ -43,7 +43,7 @@ typedef enum{
     UART_STATE_CLEAN_STATE              = 0,
     UART_STATE_WAITING_DATA             = 1,
     UART_STATE_WAITING_MAILBOX          = 2,
-    UART_STATE_MSP_COMMAND_DETECTED     = 3,
+    UART_STATE_MCU_COMMAND_DETECTED     = 3,
     UART_STATE_KUS_DATA_DETECTED        = 4,
 }uart_control_states_e;
 
@@ -74,8 +74,8 @@ typedef struct{
 
 static inline bool uart_mailbox_checker(uint8_t mailbox);
 static void uart_execute_commands(uint8_t *data);
-inline bool uart_tick_timeout_check(const uint16_t timeout, const uint16_t tickCounter);
-inline void uart_tick_counter_reset(volatile uint16_t *counter);
+bool uart_tick_timeout_check(const uint16_t timeout, const uint16_t tickCounter);
+void uart_tick_counter_reset(volatile uint16_t *counter);
 static void uart_main_state_machine(void);
 static volatile uart_manager_error_t errorsPi;
 
@@ -194,7 +194,7 @@ static void uart_main_state_machine(void){
         case (UART_STATE_WAITING_MAILBOX):
             //If the magic packet is found, then check for the 4th byte
             if (ring_buffer_peek((ring_buffer_t*)&(DataBuffer.circularBuffer), (char*)localAuxMessage, SERIAL_MAGIC_PACKET_SIZE) == true){
-                DataBuffer.state = UART_STATE_MSP_COMMAND_DETECTED;                   //This is a command for the MSP
+                DataBuffer.state = UART_STATE_MCU_COMMAND_DETECTED;                   //This is a command for the MCU
                 //if the mailbox is not valid, then this data will be sent to the kus
                 if (uart_mailbox_checker(localAuxMessage[0]) == false){
                     DataBuffer.state = UART_STATE_KUS_DATA_DETECTED;                         //This data is for the KUS
@@ -211,7 +211,7 @@ static void uart_main_state_machine(void){
         case(UART_STATE_KUS_DATA_DETECTED):                                 //Keep sending data until the dataCounter reaches SERIAL_PACKET_LENGTH_FULL or
             break; //Keep checking the timer...
 
-        case(UART_STATE_MSP_COMMAND_DETECTED):
+        case(UART_STATE_MCU_COMMAND_DETECTED):
             while (ring_buffer_dequeue((ring_buffer_t*)&(DataBuffer.circularBuffer), (char*)localAuxMessage) == true){
                 //keep popping the data until the full packet is received
                 DataBuffer.auxMessage[byteCounter] = localAuxMessage[0];
@@ -317,7 +317,7 @@ static void uart_execute_commands(uint8_t *data){
 * \b note:  This function returns true if there is a match, false otherwise
 ***********************************************************************
 */
-static inline bool uart_mailbox_checker(uint8_t mailbox){
+static bool uart_mailbox_checker(uint8_t mailbox){
     switch((uart_mailboxes_e) mailbox){
         default:
             return false;
