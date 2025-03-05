@@ -44,7 +44,9 @@ typedef enum{
     UART_STATE_WAITING_DATA             = 1,
     UART_STATE_WAITING_MAILBOX          = 2,
     UART_STATE_MCU_COMMAND_DETECTED     = 3,
-    UART_STATE_KUS_DATA_DETECTED        = 4,
+	UART_STATE_CHECK_PENDING_MESSAGES   = 4,
+	UART_STATE_SENDING_MESSAGE			= 5,
+	UART_STATE_WAITING_TX_COMPLETE		= 6,
 }uart_control_states_e;
 
 typedef enum{
@@ -179,7 +181,7 @@ static void uart_main_state_machine(void){
 			byteCounter = 0;
 			// Fall through
             //Jump straight to waiting data...
-        case(UART_STATE_WAITING_DATA):                                                          //Wait for new data.
+        case(UART_STATE_WAITING_DATA)://Wait for new data.
             //Otherwise look for the magic bytes. It should be SERIAL_MAGIC_PACKET_SIZE consecutive bytes
             while ((counter < SERIAL_MAGIC_PACKET_SIZE) && ring_buffer_peek((ring_buffer_t*)&(DataBuffer.circularBuffer), (char*)localAuxMessage, counter) == true){
                 if (localAuxMessage[0] != CARTRIDGE_SERIAL_MAGIC_NUMBER[counter]){
@@ -199,9 +201,8 @@ static void uart_main_state_machine(void){
                 //if the mailbox is not valid, then this data will be sent to the kus
                 if (uart_mailbox_checker(localAuxMessage[0]) == false){
                     break; //Do nothing because this UART do not talk to KUS
-                    }//otherwise this data is an MSP command
-                }
-            }
+				}//otherwise this data is an MSP command
+			}
             break;  //Keep checking the timer.
 
         case(UART_STATE_MCU_COMMAND_DETECTED):
@@ -216,7 +217,7 @@ static void uart_main_state_machine(void){
                     }else{
                         //trigger_error(UART_WRONG_PACKET);            //Trigger the UART wrong packet error
                     }
-                    DataBuffer.state =  UART_STATE_CLEAN_STATE;      //Clean variables
+                    DataBuffer.state = UART_STATE_CLEAN_STATE;      //Clean variables
                     break;
                 }
             }
