@@ -57,7 +57,7 @@ typedef struct{
     uint8_t     mailbox;
     uint8_t     length;
     uint8_t     data[SERIAL_PACKET_LENGTH - 8];  //Includes 8 byte for ECC
-}cartridgeSerialMessage_t;
+}SendSerialMessage_t;
 
 typedef struct{
     uint16_t                        tickCounter;
@@ -65,6 +65,7 @@ typedef struct{
     uint8_t                         auxMessage[SERIAL_PACKET_LENGTH_FULL];
     uart_control_states_e state;
     ring_buffer_t                   circularBuffer;
+    SendSerialMessage_t 			serialMessagePendingToBeSent;
 }data_buffer_t;
 
 
@@ -197,19 +198,11 @@ static void uart_main_state_machine(void){
                 DataBuffer.state = UART_STATE_MCU_COMMAND_DETECTED;                   //This is a command for the MCU
                 //if the mailbox is not valid, then this data will be sent to the kus
                 if (uart_mailbox_checker(localAuxMessage[0]) == false){
-                    DataBuffer.state = UART_STATE_KUS_DATA_DETECTED;                         //This data is for the KUS
-                    //pop the first value from the queue
-                    if (ring_buffer_dequeue((ring_buffer_t*)&(DataBuffer.circularBuffer), (char*)localAuxMessage) == true){
-                        //and send it to the KUS
-                    	HAL_UART_Transmit_IT(&huart2, &localAuxMessage[0], 1);
-                        __HAL_UART_ENABLE_IT(&huart2, UART_IT_TXE);
+                    break; //Do nothing because this UART do not talk to KUS
                     }//otherwise this data is an MSP command
                 }
             }
             break;  //Keep checking the timer.
-
-        case(UART_STATE_KUS_DATA_DETECTED):                                 //Keep sending data until the dataCounter reaches SERIAL_PACKET_LENGTH_FULL or
-            break; //Keep checking the timer...
 
         case(UART_STATE_MCU_COMMAND_DETECTED):
             while (ring_buffer_dequeue((ring_buffer_t*)&(DataBuffer.circularBuffer), (char*)localAuxMessage) == true){
@@ -326,6 +319,19 @@ static bool uart_mailbox_checker(uint8_t mailbox){
             return true;
     }
 }
+
+bool uartControl_message_creator(uart_mailboxes_e mailbox, const uint8_t length, uint8_t* data){
+    //Check if there is any pending message in memory. If mailbox equals 0 it means that its empty.
+    if (DataBuffer.serialMessagePendingToBeSent.mailbox == 0){
+        // Create the message packet
+        DataBuffer.serialMessagePendingToBeSent.mailbox = mailbox;                                    		// Mailbox
+        DataBuffer.serialMessagePendingToBeSent.length = length;                                      		// Length of data
+        memcpy((void*)DataBuffer.serialMessagePendingToBeSent.data, data, sizeof(uint8_t) * length);         //Copy the message data
+        return true;
+    }
+    return false;
+}
+
 
 /******************************************************************************
 * EOF

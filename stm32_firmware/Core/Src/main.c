@@ -21,6 +21,7 @@
 #include "adc.h"
 #include "evalve_control.h"
 #include "uart_control.h"
+#include "hw_rev_module.h"
 #include "usart.h"
 
 #define SERIAL_LENGTH 5
@@ -41,7 +42,6 @@ static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_TIM3_Init(void);
 static void Task_Every_1ms(void);
-static void generate_Serial_Num(void);
 /**
   * @brief  The application entry point.
   * @retval int
@@ -99,25 +99,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 static void Task_Every_1ms(void)
 {
-    //counter++;
+	send_MCU_status();
+	//counter++;
     //eValveControl_millisCounter();
     /*if (counter >= delay_value){
     	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5); // Example: Toggle an LED
     	counter = 0;
     }*/
-}
-
-static void generate_Serial_Num(void){
-    uint32_t serial = 0;
-    const uint16_t deviceID = *((volatile uint32_t*)0x1FFFF7E8); // Get the unique ID from the STM32 Chip
-    srand(deviceID); // Generate a 5-digit random number based on the unique ID
-    for (uint8_t i = 0; i < SERIAL_LENGTH; i++){
-        serial = serial * 10 + (rand() % 10);
-    }
-    if(serialNumber == 0){
-        serialNumber = serial;
-        Save_To_Flash(FLASH_SERIAL_ADDR, &serialNumber, sizeof(serialNumber));
-    }
 }
 
 /**
