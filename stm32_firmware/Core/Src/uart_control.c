@@ -75,7 +75,7 @@ typedef struct{
 * PROTOTYPES OF LOCAL FUNCTIONS
 *****************************************************************************/
 
-static inline bool uart_mailbox_checker(uint8_t mailbox);
+static bool uart_mailbox_checker(uint8_t mailbox);
 static void uart_execute_commands(uint8_t *data);
 bool uart_tick_timeout_check(const uint16_t timeout, const uint16_t tickCounter);
 void uart_tick_counter_reset(volatile uint16_t *counter);
@@ -214,14 +214,35 @@ static void uart_main_state_machine(void){
                     //Exclude the magic packet from the message
                     if (DataBuffer.auxMessage[SERIAL_MAGIC_PACKET_SIZE] == 0){
                         uart_execute_commands(localAuxMessage);       //Execute the received command
-                    }else{
-                        //trigger_error(UART_WRONG_PACKET);            //Trigger the UART wrong packet error
                     }
-                    DataBuffer.state = UART_STATE_CLEAN_STATE;      //Clean variables
+
+                    DataBuffer.state = UART_STATE_CHECK_PENDING_MESSAGES;      //Clean variables
                     break;
                 }
             }
             break;  //If not enough data, keep checking the timer.
+        case(UART_STATE_CHECK_PENDING_MESSAGES):
+			if (DataBuffer.serialMessagePendingToBeSent.mailbox != 0){
+				DataBuffer.state = UART_STATE_SENDING_MESSAGE;
+			}
+			else{
+				DataBuffer.state = UART_STATE_CLEAN_STATE;
+			}
+			break;
+        case UART_STATE_SENDING_MESSAGE:
+			if (HAL_UART_Transmit_IT(&huart2,
+				(uint8_t*)&DataBuffer.serialMessagePendingToBeSent,
+				DataBuffer.serialMessagePendingToBeSent.length + sizeof(DataBuffer.serialMessagePendingToBeSent.mailbox) + sizeof(DataBuffer.serialMessagePendingToBeSent.length)) == HAL_OK) {
+				DataBuffer.state = UART_STATE_WAITING_TX_COMPLETE;
+			}
+			break;
+
+		case UART_STATE_WAITING_TX_COMPLETE:
+			if (__HAL_UART_GET_FLAG(&huart2, UART_FLAG_TC)) {
+				DataBuffer.serialMessagePendingToBeSent.mailbox = 0;  // Clear message
+				DataBuffer.state = UART_STATE_CLEAN_STATE;
+			}
+			break;
     }
 
     if (uart_tick_timeout_check(SERIAL_PI_TIMEOUT, DataBuffer.tickCounter) == true){   //If in 0.4ms there is no more data, timeout occurs
