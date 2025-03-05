@@ -181,18 +181,26 @@ static void uart_main_state_machine(void){
 			byteCounter = 0;
 			// Fall through
             //Jump straight to waiting data...
-        case(UART_STATE_WAITING_DATA)://Wait for new data.
-            //Otherwise look for the magic bytes. It should be SERIAL_MAGIC_PACKET_SIZE consecutive bytes
-            while ((counter < SERIAL_MAGIC_PACKET_SIZE) && ring_buffer_peek((ring_buffer_t*)&(DataBuffer.circularBuffer), (char*)localAuxMessage, counter) == true){
-                if (localAuxMessage[0] != CARTRIDGE_SERIAL_MAGIC_NUMBER[counter]){
-                    ring_buffer_dequeue((ring_buffer_t*)&(DataBuffer.circularBuffer), (char*)localAuxMessage);
-                    counter = 0;
-                }else counter++;
-            }
-            if (counter == SERIAL_MAGIC_PACKET_SIZE){
-                DataBuffer.state = UART_STATE_WAITING_MAILBOX;                         //Magic packet found, now wait for the mailbox
-            }
-            return; //Do not check the timer...
+
+        case UART_STATE_WAITING_DATA: //Wait for new data to read or send...
+			// CHECK IF THERE IS DATA TO SEND FIRST
+			if (DataBuffer.serialMessagePendingToBeSent.mailbox != 0) {
+				DataBuffer.state = UART_STATE_SENDING_MESSAGE;
+				break;
+			}
+
+			// CHECK FOR INCOMING DATA
+			while ((counter < SERIAL_MAGIC_PACKET_SIZE) &&
+				   ring_buffer_peek((ring_buffer_t*)&(DataBuffer.circularBuffer), (char*)localAuxMessage, counter)) {
+				if (localAuxMessage[0] != CARTRIDGE_SERIAL_MAGIC_NUMBER[counter]) {
+					ring_buffer_dequeue((ring_buffer_t*)&(DataBuffer.circularBuffer), (char*)localAuxMessage);
+					counter = 0;
+				} else counter++;
+			}
+			if (counter == SERIAL_MAGIC_PACKET_SIZE) {
+				DataBuffer.state = UART_STATE_WAITING_MAILBOX;
+			}
+			return; //Do not check the timer...
 
         case (UART_STATE_WAITING_MAILBOX):
             //If the magic packet is found, then check for the 4th byte
@@ -215,12 +223,12 @@ static void uart_main_state_machine(void){
                     if (DataBuffer.auxMessage[SERIAL_MAGIC_PACKET_SIZE] == 0){
                         uart_execute_commands(localAuxMessage);       //Execute the received command
                     }
-
                     DataBuffer.state = UART_STATE_CHECK_PENDING_MESSAGES;      //Clean variables
                     break;
                 }
             }
             break;  //If not enough data, keep checking the timer.
+
         case(UART_STATE_CHECK_PENDING_MESSAGES):
 			if (DataBuffer.serialMessagePendingToBeSent.mailbox != 0){
 				DataBuffer.state = UART_STATE_SENDING_MESSAGE;
@@ -229,10 +237,11 @@ static void uart_main_state_machine(void){
 				DataBuffer.state = UART_STATE_CLEAN_STATE;
 			}
 			break;
+
         case UART_STATE_SENDING_MESSAGE:
 			if (HAL_UART_Transmit_IT(&huart2,
-				(uint8_t*)&DataBuffer.serialMessagePendingToBeSent,
-				DataBuffer.serialMessagePendingToBeSent.length + sizeof(DataBuffer.serialMessagePendingToBeSent.mailbox) + sizeof(DataBuffer.serialMessagePendingToBeSent.length)) == HAL_OK) {
+					(uint8_t*)&DataBuffer.serialMessagePendingToBeSent,
+					DataBuffer.serialMessagePendingToBeSent.length + sizeof(DataBuffer.serialMessagePendingToBeSent.mailbox) + sizeof(DataBuffer.serialMessagePendingToBeSent.length)) == HAL_OK){
 				DataBuffer.state = UART_STATE_WAITING_TX_COMPLETE;
 			}
 			break;
