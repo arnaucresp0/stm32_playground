@@ -179,6 +179,7 @@ static void uart_main_state_machine(void){
 			__HAL_UART_CLEAR_IT(&huart2, UART_IT_TXE);
 			DataBuffer.state = UART_STATE_WAITING_DATA;
 			byteCounter = 0;
+			DataBuffer.serialMessagePendingToBeSent.mailbox = 0;
 			// Fall through
             //Jump straight to waiting data...
 

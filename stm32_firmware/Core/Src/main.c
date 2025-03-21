@@ -29,8 +29,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 TIM_HandleTypeDef htim3;
-
-uint16_t counter = 0;
+uint8_t counter_us = 0;
+uint16_t counter_ms = 0;
 uint16_t delay_value = 1000;
 uint32_t serialNumber = 0;
 uint32_t saved_serial = 0;
@@ -42,15 +42,13 @@ static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_TIM3_Init(void);
 static void Task_Every_1ms(void);
+static void Task_Every_100us(void);
 /**
   * @brief  The application entry point.
   * @retval int
   */
 int main(void)
 {
-
-  /* MCU Configuration--------------------------------------------------------*/
-
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
 
@@ -72,12 +70,6 @@ int main(void)
   saved_serial = Read_From_Flash(FLASH_SERIAL_ADDR);
   // Read data from Flash
   while (1){
-	  /*if (serialNumber == saved_serial){
-		  delay_value = 250;
-	  }
-	  else{
-		  delay_value = 1000;
-	  }*/
 	  //eValveControl_main();
 	  uartControl_main();
 	  //pinVal = HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin);
@@ -93,19 +85,31 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     if (htim->Instance == TIM3)  // Check if TIM3 triggered the interrupt
     {
-        Task_Every_1ms();  // Call the function every 1ms
+        Task_Every_100us();  // Call the function every 1ms
     }
 }
 
+
+static void Task_Every_100us(void){
+	uartControl_tick_counter();
+	counter_us++;
+	if (counter_us >= 10){
+		Task_Every_1ms;
+
+	}
+}
+
+
 static void Task_Every_1ms(void)
 {
-	send_MCU_status();
-	//counter++;
+	uartControl_tick_counter();
+	counter++;
     //eValveControl_millisCounter();
-    /*if (counter >= delay_value){
-    	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5); // Example: Toggle an LED
+    if (counter >= delay_value){
+    	send_MCU_status();
+    	//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5); // Example: Toggle an LED
     	counter = 0;
-    }*/
+    }
 }
 
 /**
@@ -157,7 +161,7 @@ static void MX_TIM3_Init(void)
   htim3.Instance = TIM3;
   htim3.Init.Prescaler = 7;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 999;
+  htim3.Init.Period = 99;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim3) != HAL_OK)

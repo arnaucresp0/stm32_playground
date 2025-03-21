@@ -37,7 +37,7 @@
 #define HW_VER_003                  3           //ACTUAL HARDWARE VERSION
 #define HW_SUB_VER                  1           //SUBVERSION THAT IS SET MANUALLY
 
-#define MCU_STATUS_TIMEOUT          60000/10    //In [10ms]
+#define MCU_STATUS_TIMEOUT          10   		//In [s]
 #define RETRY_TIMEOUT               570         //Timeout to retry to send again the  messages
 #define SERIAL_LENGTH               5           //THIS IS THE NUMBER OF DIGITS THAT HAS THE SERIAL NUMBER.
 #define MESSAGE_LENGTH              19          //MSP STATUS MESSAGE LENGTH
@@ -54,7 +54,7 @@ static bool send_status_data(void);
 * LOCAL VARIABLES
 *****************************************************************************/
 static uint16_t status_counter = 0;
-
+static uint8_t packet[MESSAGE_LENGTH];
 static uint32_t serialNumber = 0;
 /*****************************************************************************
 * EXPORTED FUNCTIONS
@@ -114,7 +114,7 @@ static uint32_t getSerialNumber(void){
 */
 static bool send_status_data(void){
     const uint8_t length = MESSAGE_LENGTH;
-    uint8_t packet[MESSAGE_LENGTH];
+    //uint8_t packet[MESSAGE_LENGTH];
     //FIRMWARE VERSION
     packet[0] = FIRMWARE_VERSION;                              // Firmware version
     packet[1] = FIRMWARE_VERSION2;                             // Firmware version2
