@@ -183,14 +183,13 @@ static void uart_main_state_machine(void){
 			DataBuffer.tickCounter = 0;
 			// Fall through
             //Jump straight to waiting data...
-
+			break;
         case UART_STATE_WAITING_DATA: //Wait for new data to read or send...
 			// CHECK IF THERE IS DATA TO SEND FIRST
 			if (DataBuffer.serialMessagePendingToBeSent.mailbox != 0) {
 				DataBuffer.state = UART_STATE_SENDING_MESSAGE;
 				break;
 			}
-
 			// CHECK FOR INCOMING DATA
 			while ((counter < SERIAL_MAGIC_PACKET_SIZE) &&
 				   ring_buffer_peek((ring_buffer_t*)&(DataBuffer.circularBuffer), (char*)localAuxMessage, counter)) {
