@@ -29,6 +29,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 TIM_HandleTypeDef htim3;
+DMA_HandleTypeDef hdma_usart2_tx;
 uint8_t counter_us = 0;
 uint16_t counter_ms = 0;
 uint16_t delay_value = 1000;
@@ -72,12 +73,6 @@ int main(void)
   while (1){
 	  //eValveControl_main();
 	  uartControl_main();
-	  //pinVal = HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin);
-	  //if (pinVal == GPIO_PIN_RESET){
-		  //eValveControl_triggerWaterflush();
-		  //counter = 0;
-		  //pinVal = GPIO_PIN_SET;
-	  //}
   }
 }
 
@@ -177,46 +172,8 @@ static void MX_TIM3_Init(void)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN TIM3_Init 2 */
-
-  /* USER CODE END TIM3_Init 2 */
-
 }
 
-/**
-  * @brief USART2 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USART2_UART_Init(void)
-{
-
-  /* USER CODE BEGIN USART2_Init 0 */
-
-  /* USER CODE END USART2_Init 0 */
-
-  /* USER CODE BEGIN USART2_Init 1 */
-
-  /* USER CODE END USART2_Init 1 */
-  huart2.Instance = USART2;
-  huart2.Init.BaudRate = 115200;
-  huart2.Init.WordLength = UART_WORDLENGTH_8B;
-  huart2.Init.StopBits = UART_STOPBITS_1;
-  huart2.Init.Parity = UART_PARITY_NONE;
-  huart2.Init.Mode = UART_MODE_TX_RX;
-  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
-  huart2.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-  huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-  if (HAL_UART_Init(&huart2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USART2_Init 2 */
-
-  /* USER CODE END USART2_Init 2 */
-
-}
 
 /**
   * Enable DMA controller clock

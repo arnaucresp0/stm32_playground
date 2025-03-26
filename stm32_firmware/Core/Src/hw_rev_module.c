@@ -17,6 +17,7 @@
 #include <math.h>
 #include <stdlib.h>
 
+#include "stm32f0xx_hal.h"
 #include "hw_rev_module.h"
 #include "uart_control.h"
 #include "flash.h"
@@ -69,7 +70,7 @@ void send_MCU_status(void){
     status_counter++;
     if (status_counter > MCU_STATUS_TIMEOUT){
         //Send the info packet;
-        if (send_status_data() == true){
+        if (send_status_data() == HAL_OK){
             status_counter = 0;
         }else{
             status_counter = MCU_STATUS_TIMEOUT - RETRY_TIMEOUT;
@@ -163,7 +164,7 @@ static bool send_status_data(void){
     const uint8_t general_status = 0;
     packet[18] = general_status;
 
-    return uartControl_message_creator(MAILBOX_INFO, length, packet);
+    HAL_UART_Transmit_DMA(hdma_usart2_tx, packet, MESSAGE_LENGTH);
 }
 
 /******************************************************************************
