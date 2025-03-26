@@ -180,6 +180,7 @@ static void uart_main_state_machine(void){
 			DataBuffer.state = UART_STATE_WAITING_DATA;
 			byteCounter = 0;
 			DataBuffer.serialMessagePendingToBeSent.mailbox = 0;
+			DataBuffer.tickCounter = 0;
 			// Fall through
             //Jump straight to waiting data...
 
@@ -241,8 +242,8 @@ static void uart_main_state_machine(void){
 
         case UART_STATE_SENDING_MESSAGE:
 			if (HAL_UART_Transmit_IT(&huart2,
-					(uint8_t*)&DataBuffer.serialMessagePendingToBeSent,
-					DataBuffer.serialMessagePendingToBeSent.length + sizeof(DataBuffer.serialMessagePendingToBeSent.mailbox) + sizeof(DataBuffer.serialMessagePendingToBeSent.length)) == HAL_OK){
+				(uint8_t*)&DataBuffer.serialMessagePendingToBeSent,
+				DataBuffer.serialMessagePendingToBeSent.length + sizeof(DataBuffer.serialMessagePendingToBeSent.mailbox) + sizeof(DataBuffer.serialMessagePendingToBeSent.length)) == HAL_OK){
 				DataBuffer.state = UART_STATE_WAITING_TX_COMPLETE;
 			}
 			break;

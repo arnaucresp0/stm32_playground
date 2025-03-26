@@ -89,28 +89,26 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     }
 }
 
+static void Task_Every_1ms(void)
+{
+	counter_ms++;
+    //eValveControl_millisCounter();
+    if (counter_ms >= delay_value){
+    	send_MCU_status();
+    	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5); // Example: Toggle an LED
+    	counter_ms = 0;
+    }
+}
 
 static void Task_Every_100us(void){
 	uartControl_tick_counter();
 	counter_us++;
 	if (counter_us >= 10){
-		Task_Every_1ms;
-
+		Task_Every_1ms();
+		counter_us = 0;
 	}
 }
 
-
-static void Task_Every_1ms(void)
-{
-	uartControl_tick_counter();
-	counter++;
-    //eValveControl_millisCounter();
-    if (counter >= delay_value){
-    	send_MCU_status();
-    	//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5); // Example: Toggle an LED
-    	counter = 0;
-    }
-}
 
 /**
   * @brief System Clock Configuration
