@@ -21,6 +21,7 @@
 #include "hw_rev_module.h"
 #include "uart_control.h"
 #include "flash.h"
+#include "usart.h"
 #include "version.h"
 
 
@@ -49,7 +50,7 @@
 /******************************************************************************
 * PROTOTYPES OF LOCAL FUNCTIONS
 *****************************************************************************/
-static bool send_status_data(void);
+static HAL_StatusTypeDef send_status_data(void);
 
 /******************************************************************************
 * LOCAL VARIABLES
@@ -57,6 +58,7 @@ static bool send_status_data(void);
 static uint16_t status_counter = 0;
 static uint8_t packet[MESSAGE_LENGTH];
 static uint32_t serialNumber = 0;
+DMA_HandleTypeDef hdma_usart2_tx;
 /*****************************************************************************
 * EXPORTED FUNCTIONS
 *****************************************************************************/
@@ -113,7 +115,7 @@ static uint32_t getSerialNumber(void){
 * @brief - Function to build and send the status data packet
 ***********************************************************************
 */
-static bool send_status_data(void){
+static HAL_StatusTypeDef send_status_data(void){
     const uint8_t length = MESSAGE_LENGTH;
     //uint8_t packet[MESSAGE_LENGTH];
     //FIRMWARE VERSION
@@ -164,7 +166,7 @@ static bool send_status_data(void){
     const uint8_t general_status = 0;
     packet[18] = general_status;
 
-    HAL_UART_Transmit_DMA(hdma_usart2_tx, packet, MESSAGE_LENGTH);
+    return HAL_UART_Transmit_DMA(&huart2, packet, length);
 }
 
 /******************************************************************************

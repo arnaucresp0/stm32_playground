@@ -116,14 +116,14 @@ void uartControl_tick_counter(void){
     ++(DataBuffer.tickCounter);
 }
 
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart){
+/*void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart){
 	uint8_t newValue;
 	// Check if there is data in the ring buffer
 	if (ring_buffer_dequeue((ring_buffer_t*)&(DataBuffer.circularBuffer), (char*)&newValue) == true) {
 		// Transmit the next byte
 		HAL_UART_Transmit_IT(&huart2, &newValue, 1);
 	}
-}
+}*/
 
 /**
 ***********************************************************************
