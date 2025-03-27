@@ -18,6 +18,7 @@
 
 #include "uart_control.h"
 #include "usart.h"
+#include "evalve_control.h"
 #include "utils/circular_buffer.h"
 #include "version.h"
 
@@ -44,9 +45,6 @@ typedef enum{
     UART_STATE_WAITING_DATA             = 1,
     UART_STATE_WAITING_MAILBOX          = 2,
     UART_STATE_MCU_COMMAND_DETECTED     = 3,
-	UART_STATE_CHECK_PENDING_MESSAGES   = 4,
-	UART_STATE_SENDING_MESSAGE			= 5,
-	UART_STATE_WAITING_TX_COMPLETE		= 6,
 }uart_control_states_e;
 
 typedef enum{
@@ -185,11 +183,6 @@ static void uart_main_state_machine(void){
             //Jump straight to waiting data...
 			break;
         case UART_STATE_WAITING_DATA: //Wait for new data to read or send...
-			// CHECK IF THERE IS DATA TO SEND FIRST
-			if (DataBuffer.serialMessagePendingToBeSent.mailbox != 0) {
-				DataBuffer.state = UART_STATE_SENDING_MESSAGE;
-				break;
-			}
 			// CHECK FOR INCOMING DATA
 			while ((counter < SERIAL_MAGIC_PACKET_SIZE) &&
 				   ring_buffer_peek((ring_buffer_t*)&(DataBuffer.circularBuffer), (char*)localAuxMessage, counter)) {
@@ -224,35 +217,14 @@ static void uart_main_state_machine(void){
                     if (DataBuffer.auxMessage[SERIAL_MAGIC_PACKET_SIZE] == 0){
                         uart_execute_commands(localAuxMessage);       //Execute the received command
                     }
-                    DataBuffer.state = UART_STATE_CHECK_PENDING_MESSAGES;      //Clean variables
-                    break;
+                    else{
+                    	//Wrong packet
+                    }
+					DataBuffer.state = UART_STATE_CLEAN_STATE;      //Clean variables
+					break;
                 }
             }
             break;  //If not enough data, keep checking the timer.
-
-        case(UART_STATE_CHECK_PENDING_MESSAGES):
-			if (DataBuffer.serialMessagePendingToBeSent.mailbox != 0){
-				DataBuffer.state = UART_STATE_SENDING_MESSAGE;
-			}
-			else{
-				DataBuffer.state = UART_STATE_CLEAN_STATE;
-			}
-			break;
-
-        case UART_STATE_SENDING_MESSAGE:
-			if (HAL_UART_Transmit_IT(&huart2,
-				(uint8_t*)&DataBuffer.serialMessagePendingToBeSent,
-				DataBuffer.serialMessagePendingToBeSent.length + sizeof(DataBuffer.serialMessagePendingToBeSent.mailbox) + sizeof(DataBuffer.serialMessagePendingToBeSent.length)) == HAL_OK){
-				DataBuffer.state = UART_STATE_WAITING_TX_COMPLETE;
-			}
-			break;
-
-		case UART_STATE_WAITING_TX_COMPLETE:
-			if (__HAL_UART_GET_FLAG(&huart2, UART_FLAG_TC)) {
-				DataBuffer.serialMessagePendingToBeSent.mailbox = 0;  // Clear message
-				DataBuffer.state = UART_STATE_CLEAN_STATE;
-			}
-			break;
     }
 
     if (uart_tick_timeout_check(SERIAL_PI_TIMEOUT, DataBuffer.tickCounter) == true){   //If in 0.4ms there is no more data, timeout occurs
