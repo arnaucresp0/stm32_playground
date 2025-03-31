@@ -61,10 +61,9 @@ typedef struct{
 void uartControl_main(void);
 void uartControl_init(void);
 void uartControl_tick_counter(void);
-bool uartControl_message_creator(uart_mailboxes_e mailbox, const uint8_t length, uint8_t* data);
 void rxCallbackUART(uint8_t receivedByte);
 void txCallbackUART(void);
-bool uartControl_message_creator(uart_mailboxes_e mailbox, const uint8_t length, uint8_t* data);
+void uartControl_message_creator(uart_mailboxes_e mailbox, const uint8_t length, uint8_t* data);
 
 /******************************************************************************
  * INLINED FUNCTIONS

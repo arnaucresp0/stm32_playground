@@ -185,6 +185,8 @@ static HAL_StatusTypeDef send_status_data(void){
     const uint8_t general_status = 0;
     packet[20] = general_status;
 
+    //uartControl_message_creator(MAILBOX_INFO, length, packet)
+
     return HAL_UART_Transmit_DMA(&huart2, packet, length);
 }
 

@@ -91,7 +91,7 @@ static void Task_Every_1ms(void)
     //eValveControl_millisCounter();
     if (counter_ms >= delay_value){
     	send_MCU_status();
-    	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5); // Example: Toggle an LED
+    	//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5); // Example: Toggle an LED
     	counter_ms = 0;
     }
 }
@@ -107,7 +107,7 @@ static void Task_Every_100us(void){
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
     if (huart->Instance == USART2) {
-    	//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5); // Example: Toggle an LED
+    	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5); // Example: Toggle an LED
     }
 }
 
