@@ -51,7 +51,7 @@
 * PROTOTYPES OF LOCAL FUNCTIONS
 *****************************************************************************/
 static HAL_StatusTypeDef send_status_data(void);
-
+static uint32_t xorshift32(uint32_t *state);
 /******************************************************************************
 * LOCAL VARIABLES
 *****************************************************************************/
@@ -80,6 +80,15 @@ void send_MCU_status(void){
     }
 }
 
+static uint32_t xorshift32(uint32_t *state) {
+    uint32_t x = *state;
+    x ^= x << 13;   // Left shift + XOR
+    x ^= x >> 17;   // Right shift + XOR
+    x ^= x << 5;    // Left shift + XOR
+    *state = x;     // Store new state
+    return x;
+}
+
 /**
 ***********************************************************************
 * @brief - Function to generate a 5 random digit as serial number of the board
@@ -88,14 +97,19 @@ void send_MCU_status(void){
 * \b note:  More info if needed
 ***********************************************************************
 */
-void generate_Serial_Num(void){
+void generate_Serial_Num(void) {
     uint32_t serial = 0;
-    const uint16_t deviceID = *((volatile uint32_t*)0x1FFFF7AC); // Get the unique ID from the STM32 Chip
-    srand(deviceID); // Generate a 5-digit random number based on the unique ID
-    for (uint8_t i = 0; i < SERIAL_LENGTH; i++){
-        serial = serial * 10 + (rand() % 10);
+    static uint32_t rng_state = 0;
+
+    // Use Unique Device ID as seed
+    rng_state = *((volatile uint32_t*)0x1FFFF7AC);
+
+    // Generate a 5-digit number
+    for (uint8_t i = 0; i < SERIAL_LENGTH; i++) {
+        serial = serial * 10 + (xorshift32(&rng_state) % 10);
     }
-    if(serialNumber == 0){
+
+    if (serialNumber == 0) {
         serialNumber = serial;
         Save_To_Flash(FLASH_SERIAL_ADDR, &serialNumber, sizeof(serialNumber));
     }

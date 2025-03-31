@@ -61,7 +61,7 @@ typedef enum{
 
 static void evalveControl_changeStatus(eValve_status_e state);
 static void eValveControl_OpenCloseCycles(void);
-inline bool uart_tick_timeout_check(const uint16_t timeout, const uint16_t tickCounter);
+static bool uart_tick_timeout_check(const uint16_t timeout, const uint16_t tickCounter);
 /******************************************************************************
 * LOCAL VARIABLES
 *****************************************************************************/
@@ -114,7 +114,7 @@ void evalveControl_init(void){
 * @brief - Returns true if the timeout has been reached.
 ***********************************************************************
 */
-inline bool uart_tick_timeout_check(const uint16_t timeout, const uint16_t tickCounter){
+static bool uart_tick_timeout_check(const uint16_t timeout, const uint16_t tickCounter){
     return ((uint16_t)tickCounter > (uint16_t)timeout);
 }
 

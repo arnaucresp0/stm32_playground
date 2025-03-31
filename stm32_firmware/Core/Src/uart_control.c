@@ -114,15 +114,6 @@ void uartControl_tick_counter(void){
     ++(DataBuffer.tickCounter);
 }
 
-/*void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart){
-	uint8_t newValue;
-	// Check if there is data in the ring buffer
-	if (ring_buffer_dequeue((ring_buffer_t*)&(DataBuffer.circularBuffer), (char*)&newValue) == true) {
-		// Transmit the next byte
-		HAL_UART_Transmit_IT(&huart2, &newValue, 1);
-	}
-}*/
-
 /**
 ***********************************************************************
 * @brief - This function is called every time the UART receives a Byte
@@ -189,7 +180,8 @@ static void uart_main_state_machine(void){
 				if (localAuxMessage[0] != CARTRIDGE_SERIAL_MAGIC_NUMBER[counter]) {
 					ring_buffer_dequeue((ring_buffer_t*)&(DataBuffer.circularBuffer), (char*)localAuxMessage);
 					counter = 0;
-				} else counter++;
+				}
+				else counter++;
 			}
 			if (counter == SERIAL_MAGIC_PACKET_SIZE) {
 				DataBuffer.state = UART_STATE_WAITING_MAILBOX;
