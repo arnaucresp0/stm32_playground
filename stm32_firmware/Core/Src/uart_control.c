@@ -318,14 +318,10 @@ static bool uart_mailbox_checker(uint8_t mailbox){
 
 bool uartControl_message_creator(uart_mailboxes_e mailbox, const uint8_t length, uint8_t* data){
     //Check if there is any pending message in memory. If mailbox equals 0 it means that its empty.
-    if (DataBuffer.serialMessagePendingToBeSent.mailbox == 0){
-        // Create the message packet
-        DataBuffer.serialMessagePendingToBeSent.mailbox = mailbox;                                    		// Mailbox
-        DataBuffer.serialMessagePendingToBeSent.length = length;                                      		// Length of data
-        memcpy((void*)DataBuffer.serialMessagePendingToBeSent.data, data, sizeof(uint8_t) * length);         //Copy the message data
-        return true;
-    }
-    return false;
+	DataBuffer.serialMessagePendingToBeSent.mailbox = mailbox;                                    		// Mailbox
+	DataBuffer.serialMessagePendingToBeSent.length = length;                                      		// Length of data
+	memcpy((void*)DataBuffer.serialMessagePendingToBeSent.data, data, sizeof(uint8_t) * length);         //Copy the message data
+	return true;
 }
 
 

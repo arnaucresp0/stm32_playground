@@ -44,6 +44,7 @@ static void MX_DMA_Init(void);
 static void MX_TIM3_Init(void);
 static void Task_Every_1ms(void);
 static void Task_Every_100us(void);
+
 /**
   * @brief  The application entry point.
   * @retval int
