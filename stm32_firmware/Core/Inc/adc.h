@@ -36,7 +36,7 @@ typedef enum{
     ADC_CHANNEL_A5      = 5, //CTL_CARTRIDGE_FEEDBACK CHANNEL
     ADC_CHANNEL_A6      = 6, //**not used**
     ADC_CHANNEL_A7      = 7, // **debug**
-	ADC_CHANNEL_A8	  = 8, //**not used**
+	ADC_CHANNEL_A8	  	= 8, //**not used**
 	ADC_CHANNEL_A9		= 9, //CTL_BATTERY FEEDBACK CHANNEL
     ADC_CHANNEL_MAX,
 }adc_channel_e;

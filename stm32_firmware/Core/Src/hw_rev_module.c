@@ -39,7 +39,7 @@
 #define HW_VER_003                  3           //ACTUAL HARDWARE VERSION
 #define HW_SUB_VER                  1           //SUBVERSION THAT IS SET MANUALLY
 
-#define MCU_STATUS_TIMEOUT          10   		//In [s]
+#define MCU_STATUS_TIMEOUT          100   		//In [s]
 #define RETRY_TIMEOUT               570         //Timeout to retry to send again the  messages
 #define SERIAL_LENGTH               5           //THIS IS THE NUMBER OF DIGITS THAT HAS THE SERIAL NUMBER.
 #define MESSAGE_LENGTH              20          //MSP STATUS MESSAGE LENGTH
@@ -74,6 +74,7 @@ void send_MCU_status(void){
     status_counter++;
     if (status_counter > MCU_STATUS_TIMEOUT){
         //Send the info packet;
+    	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
         if (send_status_data() == HAL_OK){
             status_counter = 0;
         }else{

@@ -234,13 +234,13 @@ static void evalveControl_changeStatus(eValve_status_e state){
     switch(state){
         default:
         case(EVALVE_STATUS_NOP):    //0-0
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
+            //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
             break;
         case(EVALVE_STATUS_OPEN):   //0-1
-			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+			//HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
             break;
         case(EVALVE_STATUS_CLOSE):   //1-0
-			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+			//HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
             break;
     }
 }

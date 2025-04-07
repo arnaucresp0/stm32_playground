@@ -14,7 +14,7 @@
   *
   ******************************************************************************
   */
-/* USER CODE END Header */
+
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "flash.h"
@@ -22,7 +22,10 @@
 #include "evalve_control.h"
 #include "uart_control.h"
 #include "hw_rev_module.h"
+#include "power_management.h"
 #include "usart.h"
+#include "error_module.h"
+#include "warning_module.h"
 
 #define SERIAL_LENGTH 5
 
@@ -32,7 +35,7 @@ TIM_HandleTypeDef htim3;
 
 uint8_t counter_us = 0;
 uint16_t counter_ms = 0;
-uint16_t delay_value = 1000;
+uint16_t delay_value = 10;
 uint32_t serialNumber = 0;
 uint32_t saved_serial = 0;
 uint8_t received_data;
@@ -72,8 +75,12 @@ int main(void)
   saved_serial = Read_From_Flash(FLASH_SERIAL_ADDR);
   // Read data from Flash
   while (1){
-	  //eValveControl_main();
+	  eValveControl_main();
 	  uartControl_main();
+	  powerMan_loop();
+	  error_module_main();
+	  warning_module_main();
+
   }
 }
 
@@ -88,10 +95,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 static void Task_Every_1ms(void)
 {
 	counter_ms++;
-    //eValveControl_millisCounter();
-    if (counter_ms >= delay_value){
+    eValveControl_millisCounter();
+    if (counter_ms >= delay_value){ //10 millies
+    	warning_module_tick_counter();
+    	error_pending_tick_counter();
+    	powerMan_tick_counter();
     	send_MCU_status();
-    	//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5); // Example: Toggle an LED
     	counter_ms = 0;
     }
 }
@@ -107,7 +116,7 @@ static void Task_Every_100us(void){
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
     if (huart->Instance == USART2) {
-    	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5); // Example: Toggle an LED
+    	//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5); // Example: Toggle an LED
     }
 }
 
@@ -208,8 +217,6 @@ static void MX_DMA_Init(void)
 static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
-/* USER CODE BEGIN MX_GPIO_Init_1 */
-/* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
@@ -232,8 +239,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
 
-/* USER CODE BEGIN MX_GPIO_Init_2 */
-/* USER CODE END MX_GPIO_Init_2 */
 }
 
 
