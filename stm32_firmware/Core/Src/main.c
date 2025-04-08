@@ -63,11 +63,10 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-  uartControl_init();
   MX_ADC_Init();
   MX_TIM3_Init();
+  uartControl_init();
 
-  HAL_UART_Receive_IT(&huart2, &received_data, 1); // Start UART reception in interrupt mode
   HAL_TIM_Base_Start_IT(&htim3);  // Start TIM3 interrupt
   adc_manager_start();
 
